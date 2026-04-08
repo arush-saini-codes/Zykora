@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1775426789112,
+    "timestamp": "2026-04-05T22:06:29.111Z",
+    "buy_interest": "Yes, definitely",
+    "productInterest": [
+      "BMW brake caliper LED lamp",
+      "Anime figure"
+    ],
+    "lamp_price": "1200-1500",
+    "advance": "Yes, no problem",
+    "whatsapp": "9988776655",
+    "custom_request": "I want a carbon fiber desk lamp.",
+    "name": "Test User",
+    "email": "test@zykora.in"
+  },
+  {
+    "id": 1775426915920,
+    "timestamp": "2026-04-05T22:08:35.920Z",
+    "buy_interest": "yes_definitely",
+    "productInterest": [
+      "bmw_lamp",
+      "custom_gift"
+    ],
+    "lamp_price": "1200_1500",
+    "advance": "yes",
+    "whatsapp": "9876543210",
+    "custom_request": "I want a glowing lithophane of my cat.",
+    "name": "Web User",
+    "email": "anonymous@zykora.in"
+  }
+]

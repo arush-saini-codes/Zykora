@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zykora — Premium 3D Printed Products</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;500;700;800&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #080808;
+    --surface: #111111;
+    --surface2: #181818;
+    --border: rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.15);
+    --accent: #b06aff;
+    --accent2: #ff4d6d;
+    --text: #f0f0f0;
+    --muted: #666;
+    --dim: #333;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.15s ease;
+    transform: translate(-50%, -50%);
+    opacity: 0.5;
+  }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.5rem 4rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8,8,8,0.85);
+    backdrop-filter: blur(20px);
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 0.15em;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 10rem 4rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(176,106,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(176,106,255,0.03) 1px, transparent 1px);
+    background-size: 80px 80px;
+    animation: gridMove 20s linear infinite;
+  }
+  @keyframes gridMove {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(80px); }
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(176,106,255,0.12) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    pointer-events: none;
+    animation: pulse 4s ease-in-out infinite;
+  }
+  .hero-glow2 {
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(255,77,109,0.08) 0%, transparent 70%);
+    bottom: 50px; left: 200px;
+    pointer-events: none;
+    animation: pulse 6s ease-in-out infinite reverse;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 0.8rem;
+    position: relative; z-index: 1;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    width: 30px; height: 1px;
+    background: var(--accent);
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(80px, 12vw, 160px);
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    position: relative; z-index: 1;
+    margin-bottom: 0.5rem;
+  }
+  .hero-title .line2 {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,255,255,0.3);
+  }
+  .hero-title .accent-word { color: var(--accent); }
+
+  .hero-sub {
+    font-size: 16px;
+    color: var(--muted);
+    margin: 2rem 0 3rem;
+    max-width: 480px;
+    line-height: 1.7;
+    position: relative; z-index: 1;
+    font-weight: 400;
+  }
+
+  .hero-cta {
+    display: flex; gap: 1rem; align-items: center;
+    position: relative; z-index: 1;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    padding: 0.9rem 2rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: none;
+    cursor: none;
+    text-decoration: none;
+    display: inline-block;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { background: #c47fff; transform: translateY(-2px); }
+
+  .btn-ghost {
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    display: flex; align-items: center; gap: 0.5rem;
+    transition: color 0.2s;
+  }
+  .btn-ghost:hover { color: var(--text); }
+  .btn-ghost::after { content: '↓'; }
+
+  /* MARQUEE */
+  .marquee-wrap {
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 0;
+    background: var(--surface);
+  }
+  .marquee-track {
+    display: flex; gap: 3rem;
+    animation: marquee 20s linear infinite;
+    white-space: nowrap;
+  }
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .marquee-item {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    color: var(--dim);
+    display: flex; align-items: center; gap: 3rem;
+    flex-shrink: 0;
+  }
+  .marquee-item .dot { color: var(--accent); font-size: 20px; line-height: 1; }
+
+  /* PRODUCTS SECTION */
+  .section {
+    padding: 8rem 4rem;
+    position: relative;
+  }
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 0.8rem;
+  }
+  .section-label::before { content: '//'; opacity: 0.5; }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1;
+    margin-bottom: 4rem;
+  }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .product-card {
+    background: var(--surface);
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+  .product-card:hover { background: var(--surface2); }
+  .product-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+  .product-card:hover::before { transform: scaleX(1); }
+
+  .product-icon {
+    font-size: 36px;
+    margin-bottom: 1.5rem;
+    display: block;
+  }
+  .product-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+  .product-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+  .product-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+  }
+
+  /* Product Slider Styles */
+  .slider-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1/1;
+    overflow: hidden;
+    background: #000;
+  }
+  .slider-track {
+    display: flex;
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    height: 100%;
+  }
+  .slider-track img {
+    min-width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: none;
+    z-index: 10;
+    transition: all 0.3s;
+    border-radius: 50%;
+  }
+  .slider-btn:hover { background: var(--accent); }
+  .slider-prev { left: 1rem; }
+  .slider-next { right: 1rem; }
+  .slider-dots {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    z-index: 10;
+  }
+  .slider-dot {
+    width: 6px;
+    height: 3px;
+    background: rgba(255,255,255,0.3);
+    transition: all 0.3s;
+  }
+  .slider-dot.active {
+    width: 20px;
+    background: var(--accent);
+  }
+
+
+
+  /* FORM SECTION */
+  .form-section {
+    padding: 8rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 6rem;
+    align-items: start;
+  }
+
+  .form-left { position: sticky; top: 8rem; }
+  .form-left .big-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 6vw, 80px);
+    line-height: 1;
+    margin-bottom: 1.5rem;
+  }
+  .form-left .big-text span { color: var(--accent); }
+  .form-left p {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 2rem;
+  }
+  .form-left .perks { list-style: none; }
+  .form-left .perks li {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--dim);
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0.8rem;
+  }
+  .form-left .perks li::before { content: '→'; color: var(--accent); }
+
+  /* THE FORM */
+  .zykora-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+  }
+
+  .form-block {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .form-block:last-of-type { border-bottom: none; margin-bottom: 1.5rem; }
+
+  .form-q {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+    line-height: 1.5;
+  }
+  .form-q-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+  .form-hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .radio-group, .check-group {
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .radio-opt, .check-opt {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--border);
+    cursor: none;
+    transition: all 0.15s;
+    font-size: 13px;
+    color: var(--muted);
+    position: relative;
+    overflow: hidden;
+  }
+  .radio-opt:hover, .check-opt:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    background: rgba(176,106,255,0.05);
+  }
+  .radio-opt input, .check-opt input {
+    accent-color: var(--accent);
+    width: 14px; height: 14px;
+    flex-shrink: 0;
+  }
+
+  .text-input {
+    width: 100%;
+    background: var(--black);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.8rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .text-input:focus { border-color: var(--accent); }
+  .text-input::placeholder { color: var(--dim); }
+
+  .submit-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 1.1rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.15em;
+    cursor: none;
+    transition: all 0.2s;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+    margin-top: 0.5rem;
+  }
+  .submit-btn:hover { background: #c47fff; transform: translateY(-2px); }
+
+  .form-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    text-align: center;
+    margin-top: 1rem;
+  }
+
+  /* SUCCESS STATE */
+  .success-msg {
+    display: none;
+    text-align: center;
+    padding: 4rem 2rem;
+  }
+  .success-msg.show { display: block; }
+  .success-icon {
+    font-size: 48px;
+    margin-bottom: 1rem;
+  }
+  .success-msg h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .success-msg p {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.15em;
+    color: var(--dim);
+  }
+  .footer-logo span { color: var(--accent); }
+  .footer-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  .footer-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  /* ANIMATIONS */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--dim); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+    @media (max-width: 900px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .hero { padding: 8rem 1.5rem 4rem; }
+      .section { padding: 5rem 1.5rem; }
+      .products-grid { grid-template-columns: 1fr; }
+      .form-section { grid-template-columns: 1fr; gap: 3rem; padding: 5rem 1.5rem; }
+      .form-left { position: static; }
+      footer { padding: 2rem 1.5rem; flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav>
+  <a href="#" class="nav-logo">ZY<span>K</span>ORA</a>
+  <span class="nav-tag">// 3D PRINTED PRODUCTS — THAPAR</span>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+
+  <div class="hero-eyebrow">Launching Soon — Patiala</div>
+
+  <h1 class="hero-title">
+    <div>PREMIUM</div>
+    <div class="line2">3D <span class="accent-word">CRAFTED</span></div>
+    <div class="line2">PRODUCTS</div>
+  </h1>
+
+  <p class="hero-sub">
+    Handcrafted 3D printed lamps, custom gifts, and aesthetic desk pieces. Built at Thapar. Shipped across India.
+  </p>
+
+  <div class="hero-cta">
+    <a href="#form" class="btn-primary">Get Early Access</a>
+    <a href="#products" class="btn-ghost">See what we make</a>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <div class="marquee-item">BMW BRAKE CALIPER LAMP <span class="dot">✦</span> CUSTOM GIFTS <span class="dot">✦</span> ANIME FIGURES <span class="dot">✦</span> LED DESK LAMPS <span class="dot">✦</span> COUPLE NAMEPLATES <span class="dot">✦</span> CAR ACCESSORIES <span class="dot">✦</span></div>
+    <div class="marquee-item">BMW BRAKE CALIPER LAMP <span class="dot">✦</span> CUSTOM GIFTS <span class="dot">✦</span> ANIME FIGURES <span class="dot">✦</span> LED DESK LAMPS <span class="dot">✦</span> COUPLE NAMEPLATES <span class="dot">✦</span> CAR ACCESSORIES <span class="dot">✦</span></div>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<section class="section" id="products">
+  <div class="section-label">What we make</div>
+  <h2 class="section-title fade-up">OUR<br><span style="color:transparent;-webkit-text-stroke:1px rgba(255,255,255,0.2)">PRODUCTS</span></h2>
+
+  <div class="products-grid fade-up">
+    <div class="product-card" style="padding:0;overflow:hidden;">
+      <div class="product-num" style="top:1rem;right:1rem;">01</div>
+      <div class="slider-container" id="caliperSlider">
+        <div class="slider-track" id="caliperTrack">
+          <img src="images/Screenshot 2026-04-05 163059.png" alt="BMW Caliper Lamp 1">
+          <img src="images/Screenshot 2026-04-05 163107.png" alt="BMW Caliper Lamp 2">
+          <img src="images/Screenshot 2026-04-05 163114.png" alt="BMW Caliper Lamp 3">
+          <img src="images/Screenshot 2026-04-05 175549.png" alt="BMW Caliper Lamp 4">
+        </div>
+        <button class="slider-btn slider-prev" onclick="moveSlider(-1)">←</button>
+        <button class="slider-btn slider-next" onclick="moveSlider(1)">→</button>
+        <div class="slider-dots" id="sliderDots"></div>
+      </div>
+      <div style="padding:1.5rem; background: var(--surface2)">
+        <div class="product-name">BMW M-Performance Caliper Lamp</div>
+        <div class="product-desc">Authentic 3D printed brake disc desk lamp with integrated LEDs. Glowing rotor effect. USB-C powered. High-fidelity FDM textures.</div>
+        <div class="product-price">₹1,199 — Launching Soon</div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-num">02</div>
+      <img src="images/custom_gift_lamp_printed_1775426035788.png" alt="Custom Lithophane Lamp" class="product-img" style="width:100%; aspect-ratio:1; object-fit:cover; margin-bottom:1.5rem;">
+      <div class="product-name">Personalized Lithophane Lamp</div>
+      <div class="product-desc">Transform your favorite memories into glowing 3D-printed art. Textured matte black minimal frames.</div>
+      <div class="product-price">From ₹899</div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-num">03</div>
+      <img src="images/anime_figure_printed_1775426021013.png" alt="Anime 3D Print" class="product-img" style="width:100%; aspect-ratio:1; object-fit:cover; margin-bottom:1.5rem;">
+      <div class="product-name">Anime Collectibles</div>
+      <div class="product-desc">High-detail anime figures with realistic FDM layer textures. For the true collectors at Thapar.</div>
+      <div class="product-price">From ₹649</div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-num">04</div>
+      <img src="images/couple_nameplate_printed_1775426068737.png" alt="Couple Nameplate" class="product-img" style="width:100%; aspect-ratio:1; object-fit:cover; margin-bottom:1.5rem;">
+      <div class="product-name">Couple Nameplates</div>
+      <div class="product-desc">Custom 3D-lettering nameplates. Perfect for dorm rooms and personalized gifting.</div>
+      <div class="product-price">₹499</div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-num">05</div>
+      <img src="images/aesthetic_desk_piece_printed_1775426048681.png" alt="Desk Organizer" class="product-img" style="width:100%; aspect-ratio:1; object-fit:cover; margin-bottom:1.5rem;">
+      <div class="product-name">Voronoi Desk Pieces</div>
+      <div class="product-desc">Aesthetic geometric desk organizers. Minimalist design showing authentic print layers.</div>
+      <div class="product-price">₹399</div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-num">06</div>
+      <img src="images/led_desk_stand_printed_1775426082872.png" alt="LED Stand" class="product-img" style="width:100%; aspect-ratio:1; object-fit:cover; margin-bottom:1.5rem;">
+      <div class="product-name">Cyberpunk LED Stands</div>
+      <div class="product-desc">Future-proof your setup with integrated lighting and 3D-crafted structural pieces.</div>
+      <div class="product-price">₹1,499</div>
+    </div>
+  </div>
+</section>
+
+<!-- FORM SECTION -->
+<section class="form-section" id="form">
+  <div class="form-left fade-up">
+    <div class="section-label">Early access</div>
+    <div class="big-text">BE THE<br>FIRST TO<br><span>ORDER</span></div>
+    <p>We're still building. Fill this form and we'll notify you the moment Zykora goes live — with an exclusive launch discount.</p>
+    <ul class="perks">
+      <li>First access before public launch</li>
+      <li>Exclusive discount for early responders</li>
+      <li>Your input shapes what we build first</li>
+      <li>Direct WhatsApp updates from us</li>
+    </ul>
+  </div>
+
+  <div class="form-right fade-up">
+    <form class="zykora-form fade-up" id="zykoraForm" name="zykora-early-access" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="zykora-early-access">
+      <p style="display:none"><label>Don't fill this out if you're human: <input name="bot-field"></label></p>
+      
+      <div class="form-block">
+        <div class="form-q-num">01 — ESSENTIAL</div>
+        <div class="form-q">Would you buy a 3D printed product if it looked premium?</div>
+        <div class="radio-group" style="margin-top:0.8rem">
+          <label class="radio-opt"><input type="radio" name="buy_interest" value="yes_definitely" required> Yes, definitely</label>
+          <label class="radio-opt"><input type="radio" name="buy_interest" value="maybe"> Maybe — depends on the product</label>
+          <label class="radio-opt"><input type="radio" name="buy_interest" value="probably_not"> Probably not</label>
+        </div>
+      </div>
+
+      <div class="form-block">
+        <div class="form-q-num">02 — MULTI SELECT</div>
+        <div class="form-q">What would you most likely buy from Zykora?</div>
+        <div class="check-group" style="margin-top:0.8rem">
+          <label class="check-opt"><input type="checkbox" name="products" value="bmw_lamp"> BMW brake caliper LED lamp</label>
+          <label class="check-opt"><input type="checkbox" name="products" value="custom_nameplate"> Custom name or couple nameplate</label>
+          <label class="check-opt"><input type="checkbox" name="products" value="anime_figure"> Anime figure or desk decor</label>
+          <label class="check-opt"><input type="checkbox" name="products" value="phone_stand"> Phone stand or desk organizer</label>
+          <label class="check-opt"><input type="checkbox" name="products" value="custom_gift"> Custom gift for Valentine's or birthday</label>
+          <label class="check-opt"><input type="checkbox" name="products" value="led_lamp"> LED ambient lamp</label>
+        </div>
+      </div>
+
+      <div class="form-block">
+        <div class="form-q-num">03 — REQUIRED</div>
+        <div class="form-q">BMW brake caliper lamp — what price feels right?</div>
+        <div class="form-hint">Glowing red rotor · blue caliper · USB powered · 15cm</div>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="lamp_price" value="below_800"> Below ₹800 only</label>
+          <label class="radio-opt"><input type="radio" name="lamp_price" value="800_1200"> ₹800–1,200 — reasonable</label>
+          <label class="radio-opt"><input type="radio" name="lamp_price" value="1200_1500"> ₹1,200–1,500 — fine if quality is good</label>
+          <label class="radio-opt"><input type="radio" name="lamp_price" value="above_1500"> Above ₹1,500 if it looks perfect</label>
+        </div>
+      </div>
+
+      <div class="form-block">
+        <div class="form-q-num">04 — REQUIRED</div>
+        <div class="form-q">Would you pay 50% advance for a custom order?</div>
+        <div class="radio-group" style="margin-top:0.8rem">
+          <label class="radio-opt"><input type="radio" name="advance" value="yes"> Yes, no problem</label>
+          <label class="radio-opt"><input type="radio" name="advance" value="after_seeing_work"> Only after seeing previous work</label>
+          <label class="radio-opt"><input type="radio" name="advance" value="on_delivery"> Prefer to pay on delivery</label>
+        </div>
+      </div>
+
+      <div class="form-block">
+        <div class="form-q-num">05 — OPTIONAL BUT IMPORTANT</div>
+        <div class="form-q">Drop your WhatsApp number for early access</div>
+        <div class="form-hint">No spam — only a launch notification</div>
+        <input class="text-input" type="tel" name="whatsapp" placeholder="98XXXXXXXX" style="margin-top:0.5rem">
+      </div>
+
+      <div class="form-block">
+        <div class="form-q-num">06 — OPTIONAL</div>
+        <div class="form-q">Anything specific you want us to make?</div>
+        <input class="text-input" type="text" name="custom_request" placeholder="Mercedes lamp, JJK figure, couple gift..." style="margin-top:0.8rem">
+      </div>
+
+      <button type="submit" class="submit-btn">SUBMIT — GET EARLY ACCESS</button>
+      <div class="form-note">zykora.in · made at thapar · ships pan-india</div>
+    </form>
+
+    <div class="success-msg" id="successMsg">
+      <div class="success-icon">⚡</div>
+      <h3>YOU'RE IN.</h3>
+      <p>We'll hit you up on WhatsApp when Zykora goes live.<br>Expect something crazy.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">ZY<span>K</span>ORA</div>
+  <div class="footer-text">PREMIUM 3D PRINTED PRODUCTS · THAPAR INSTITUTE · PATIALA</div>
+  <div class="footer-tag">// EST. 2026</div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 5 + 'px';
+    cursor.style.top = my - 5 + 'px';
+  });
+  function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) *.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+
+  // Fade up on scroll
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+
+  // BMW Slider Logic
+  let currentSlide = 0;
+  const track = document.getElementById('caliperTrack');
+  const dotsContainer = document.getElementById('sliderDots');
+  const items = track.querySelectorAll('img');
+
+  items.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'slider-dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goToSlide(i);
+    dotsContainer.appendChild(d);
+  });
+
+  function updateDots() {
+    dotsContainer.querySelectorAll('.slider-dot').forEach((d, i) => {
+      d.className = 'slider-dot' + (i === currentSlide ? ' active' : '');
+    });
+  }
+
+  function goToSlide(index) {
+    currentSlide = index;
+    track.style.transform = `translateX(-${currentSlide * 100}%)`;
+    updateDots();
+  }
+
+  function moveSlider(dir) {
+    currentSlide = (currentSlide + dir + items.length) % items.length;
+    goToSlide(currentSlide);
+  }
+
+  // Form submit — Connected to local backend /api/register with Netlify fallback
+  const form = document.getElementById('zykoraForm');
+  const successMsg = document.getElementById('successMsg');
+  if(form) {
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      
+      const formData = new FormData(form);
+      
+      // Data for local Node.js server (JSON)
+      const payload = {
+        buy_interest: formData.get('buy_interest'),
+        productInterest: formData.getAll('products'),
+        lamp_price: formData.get('lamp_price'),
+        advance: formData.get('advance'),
+        whatsapp: formData.get('whatsapp'),
+        custom_request: formData.get('custom_request'),
+        name: 'Web User', 
+        email: 'anonymous@zykora.in',
+        "form-name": "zykora-early-access"
+      };
+
+      // 1. Try local server first (for dev)
+      try {
+        const localResponse = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if (localResponse.ok) {
+          const result = await localResponse.json();
+          if (result.success) {
+            form.style.display = 'none';
+            successMsg.classList.add('show');
+            document.getElementById('form').scrollIntoView({ behavior: 'smooth' });
+            return;
+          }
+        }
+      } catch(err) {
+        console.log('Local backend not responding, falling back to Netlify Forms...');
+      }
+
+      // 2. Netlify Forms Submission
+      try {
+        const response = await fetch('/', {
+          method: 'POST',
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams(formData).toString()
+        });
+
+        if (response.ok) {
+          form.style.display = 'none';
+          successMsg.classList.add('show');
+          document.getElementById('form').scrollIntoView({ behavior: 'smooth' });
+        } else {
+          throw new Error('Netlify responded with error status: ' + response.status);
+        }
+      } catch (err) {
+        console.error('Submission failed:', err);
+        alert('Something went wrong. Please try again or message us directly on WhatsApp!');
+      }
+    });
+  }
+</script>
+</body>
+</html>
