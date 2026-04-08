@@ -5,36 +5,37 @@ const path = require('path');
 
 const app = express();
 
-// 🔥 HEALTH CHECK (VERY IMPORTANT)
+// 🔥 DEBUG: Check PORT from Render
+console.log("ENV PORT:", process.env.PORT);
+
+// 🔥 HEALTH CHECK (for Render + debugging)
 app.get('/health', (req, res) => {
     res.status(200).send('OK');
 });
 
-// 🔥 REQUEST LOGGER (DEBUGGING)
+// 🔥 REQUEST LOGGER (helps debug live issues)
 app.use((req, res, next) => {
     console.log('Incoming request:', req.method, req.url);
     next();
 });
 
-// 1. PORT FIX (CRITICAL)
+// CONFIG
 const PORT = process.env.PORT || 3000;
 const ADMIN_KEY = process.env.ADMIN_KEY || 'JAISHREERAM';
 const DATA_FILE = path.join(process.cwd(), 'responses.json');
 
-// 4. BODY PARSING
+// BODY PARSING
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 5. CORS SUPPORT
-app.use(cors({
-    origin: '*'
-}));
+// CORS
+app.use(cors({ origin: '*' }));
 
-// 2. STATIC FILE SERVING
+// STATIC FILES
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(express.static(__dirname));
 
-// Initialize responses.json safely
+// Ensure responses.json exists
 if (!fs.existsSync(DATA_FILE)) {
     try {
         fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2), 'utf8');
@@ -43,39 +44,38 @@ if (!fs.existsSync(DATA_FILE)) {
     }
 }
 
-// 3. ROUTING FIX (SAFER VERSION)
+// ROOT ROUTE (SAFE)
 app.get('/', (req, res) => {
     const filePath = path.join(__dirname, 'index.html');
     console.log('Serving:', filePath);
 
     res.sendFile(filePath, (err) => {
         if (err) {
-            console.error('Error sending file:', err);
+            console.error('Error sending index.html:', err);
             res.status(500).send('Error loading page');
         }
     });
 });
 
+// ADMIN PAGE
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
-// 7. API ENDPOINTS (Form Submission)
+// FORM SUBMISSION
 app.post('/api/register', (req, res) => {
     const data = req.body;
     const timestamp = new Date().toISOString();
     const id = Date.now();
 
-    const newResponse = {
-        id,
-        timestamp,
-        ...data
-    };
+    const newResponse = { id, timestamp, ...data };
 
     try {
         let currentData = [];
+
         if (fs.existsSync(DATA_FILE)) {
             const rawData = fs.readFileSync(DATA_FILE, 'utf8');
+
             if (rawData) {
                 try {
                     currentData = JSON.parse(rawData);
@@ -85,49 +85,56 @@ app.post('/api/register', (req, res) => {
                 }
             }
         }
-        
+
         currentData.push(newResponse);
         fs.writeFileSync(DATA_FILE, JSON.stringify(currentData, null, 2), 'utf8');
+
         res.json({ success: true, message: 'Response saved!' });
+
     } catch (error) {
         console.error('Error saving response:', error);
-        res.status(500).json({ success: false, message: 'Internal server error while saving data' });
+        res.status(500).json({ success: false });
     }
 });
 
-// Admin data endpoint
+// ADMIN DATA
 app.get('/api/responses', (req, res) => {
     const auth = req.headers.authorization;
+
     if (auth !== ADMIN_KEY) {
-        return res.status(401).json({ success: false, message: 'Unauthorized' });
+        return res.status(401).json({ success: false });
     }
 
     try {
         let currentData = [];
+
         if (fs.existsSync(DATA_FILE)) {
             const rawData = fs.readFileSync(DATA_FILE, 'utf8');
+
             if (rawData) {
                 try {
                     currentData = JSON.parse(rawData);
                 } catch (err) {
-                    console.error('JSON parse error, resetting file');
+                    console.error('JSON parse error');
                     currentData = [];
                 }
             }
         }
+
         res.json(currentData);
+
     } catch (error) {
         console.error('Error reading responses:', error);
-        res.status(500).json({ success: false, message: 'Error reading responses' });
+        res.status(500).json({ success: false });
     }
 });
 
-// Fallback
+// FALLBACK ROUTE
 app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// START SERVER
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Zykora Server running on port ${PORT}`);
+// 🔥 FINAL LISTEN (CRITICAL FIX)
+app.listen(process.env.PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${process.env.PORT}`);
 });
