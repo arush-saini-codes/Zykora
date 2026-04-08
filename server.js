@@ -113,5 +113,5 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Zykora Server running at http://localhost:${PORT}`);
+    console.log(`Zykora Server running on port ${PORT}`);
 });
