@@ -5,6 +5,17 @@ const path = require('path');
 
 const app = express();
 
+// 🔥 HEALTH CHECK (VERY IMPORTANT)
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
+// 🔥 REQUEST LOGGER (DEBUGGING)
+app.use((req, res, next) => {
+    console.log('Incoming request:', req.method, req.url);
+    next();
+});
+
 // 1. PORT FIX (CRITICAL)
 const PORT = process.env.PORT || 3000;
 const ADMIN_KEY = process.env.ADMIN_KEY || 'JAISHREERAM';
@@ -20,9 +31,7 @@ app.use(cors({
 }));
 
 // 2. STATIC FILE SERVING
-// Serve the images folder
 app.use('/images', express.static(path.join(__dirname, 'images')));
-// Serve other static assets from root directory (like CSS, JS if any)
 app.use(express.static(__dirname));
 
 // Initialize responses.json safely
@@ -34,9 +43,17 @@ if (!fs.existsSync(DATA_FILE)) {
     }
 }
 
-// 3. ROUTING FIX
+// 3. ROUTING FIX (SAFER VERSION)
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    const filePath = path.join(__dirname, 'index.html');
+    console.log('Serving:', filePath);
+
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            console.error('Error sending file:', err);
+            res.status(500).send('Error loading page');
+        }
+    });
 });
 
 app.get('/admin', (req, res) => {
@@ -56,7 +73,6 @@ app.post('/api/register', (req, res) => {
     };
 
     try {
-        // 6. FILE STORAGE HANDLING
         let currentData = [];
         if (fs.existsSync(DATA_FILE)) {
             const rawData = fs.readFileSync(DATA_FILE, 'utf8');
@@ -74,7 +90,6 @@ app.post('/api/register', (req, res) => {
         fs.writeFileSync(DATA_FILE, JSON.stringify(currentData, null, 2), 'utf8');
         res.json({ success: true, message: 'Response saved!' });
     } catch (error) {
-        // 8. ERROR HANDLING
         console.error('Error saving response:', error);
         res.status(500).json({ success: false, message: 'Internal server error while saving data' });
     }
@@ -102,16 +117,17 @@ app.get('/api/responses', (req, res) => {
         }
         res.json(currentData);
     } catch (error) {
-        // 8. ERROR HANDLING
         console.error('Error reading responses:', error);
         res.status(500).json({ success: false, message: 'Error reading responses' });
     }
 });
 
+// Fallback
 app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// START SERVER
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Zykora Server running on port ${PORT}`);
 });
